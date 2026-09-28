@@ -1,0 +1,226 @@
+{
+  "info": {
+    "_postman_id": "b7c1f2a4-3d5e-4a6b-9c8d-1e2f3a4b5c6d",
+    "name": "Clientes CRUD - email",
+    "description": "Pruebas del CRUD de clientes incluyendo el atributo email. Ejecutar en orden: el cliente se crea, se consulta, se actualiza y se elimina.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "cedula", "value": "E-001" }
+  ],
+  "item": [
+    {
+      "name": "1. Crear cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Crear: responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Crear: devuelve el email enviado', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.email).to.eql('ana@mail.com');",
+              "    pm.expect(body.cedula).to.eql(pm.collectionVariables.get('cedula'));",
+              "});",
+              "",
+              "pm.collectionVariables.set('emailCreado', pm.response.json().email);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cedula\": \"{{cedula}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Ruiz\",\n  \"email\": \"ana@mail.com\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/cliente", "host": ["{{baseUrl}}"], "path": ["cliente"] },
+        "description": "Crea un cliente con email. Debe devolver el objeto completo."
+      }
+    },
+    {
+      "name": "2. Listar clientes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Listar: responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Listar: el cliente aparece con su email', function () {",
+              "    var lista = pm.response.json();",
+              "    pm.expect(lista).to.be.an('array');",
+              "    var cedula = pm.collectionVariables.get('cedula');",
+              "    var encontrado = lista.find(function (c) { return c.cedula === cedula; });",
+              "    pm.expect(encontrado, 'el cliente deberia estar en la lista').to.not.be.undefined;",
+              "    pm.expect(encontrado.email).to.eql(pm.collectionVariables.get('emailCreado'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/cliente", "host": ["{{baseUrl}}"], "path": ["cliente"] },
+        "description": "Verifica que el cliente creado aparece en el listado con su email."
+      }
+    },
+    {
+      "name": "3. Consultar cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Consultar: responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Consultar: trae nombre, apellido y email', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.cedula).to.eql(pm.collectionVariables.get('cedula'));",
+              "    pm.expect(body.nombre).to.eql('Ana');",
+              "    pm.expect(body.apellido).to.eql('Ruiz');",
+              "    pm.expect(body.email).to.eql('ana@mail.com');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/cliente/{{cedula}}", "host": ["{{baseUrl}}"], "path": ["cliente", "{{cedula}}"] },
+        "description": "Consulta un cliente por cedula y valida los 4 campos."
+      }
+    },
+    {
+      "name": "4. Actualizar cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Actualizar: responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Actualizar: propaga el nuevo email', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.nombre).to.eql('Ana Maria');",
+              "    pm.expect(body.apellido).to.eql('Ruis');",
+              "    pm.expect(body.email).to.eql('ana.nueva@mail.com');",
+              "});",
+              "",
+              "pm.collectionVariables.set('emailActualizado', pm.response.json().email);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cedula\": \"{{cedula}}\",\n  \"nombre\": \"Ana Maria\",\n  \"apellido\": \"Ruis\",\n  \"email\": \"ana.nueva@mail.com\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/cliente/{{cedula}}", "host": ["{{baseUrl}}"], "path": ["cliente", "{{cedula}}"] },
+        "description": "Este es el paso clave: el email debe quedar actualizado, no solo nombre y apellido."
+      }
+    },
+    {
+      "name": "5. Verificar actualizacion (email persistido)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Verificar: responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Verificar: el email quedo guardado, no solo devuelto', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.email).to.eql(pm.collectionVariables.get('emailActualizado'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/cliente/{{cedula}}", "host": ["{{baseUrl}}"], "path": ["cliente", "{{cedula}}"] },
+        "description": "Segunda lectura: confirma que el email nuevo quedo persistido en el servidor."
+      }
+    },
+    {
+      "name": "6. Eliminar cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Eliminar: responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Eliminar: devuelve true', function () {",
+              "    pm.expect(pm.response.text()).to.eql('true');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/cliente/{{cedula}}", "host": ["{{baseUrl}}"], "path": ["cliente", "{{cedula}}"] },
+        "description": "Elimina el cliente por cedula."
+      }
+    },
+    {
+      "name": "7. Verificar eliminacion",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Verificar: el cliente ya no existe', function () {",
+              "    pm.expect(pm.response.text().trim()).to.eql('');",
+              "});",
+              "",
+              "pm.test('Verificar: no aparece en el listado', function () {",
+              "    pm.sendRequest({",
+              "        url: pm.collectionVariables.get('baseUrl') + '/cliente',",
+              "        method: 'GET'",
+              "    }, function (err, res) {",
+              "        var lista = JSON.parse(res.text());",
+              "        var cedula = pm.collectionVariables.get('cedula');",
+              "        var encontrado = lista.find(function (c) { return c.cedula === cedula; });",
+              "        pm.expect(encontrado, 'el cliente no deberia seguir en la lista').to.be.undefined;",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/cliente/{{cedula}}", "host": ["{{baseUrl}}"], "path": ["cliente", "{{cedula}}"] },
+        "description": "Tras eliminar, la consulta por cedula debe venir vacia."
+      }
+    }
+  ]
+}
